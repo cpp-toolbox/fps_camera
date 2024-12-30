@@ -15,7 +15,16 @@ FPSCamera::FPSCamera(glm::vec3 startPosition, double user_sensitivity, float scr
 
 // Processes keyboard input for movement
 void FPSCamera::process_input(GLFWwindow *window, float delta_time) {
-    float delta_pos = move_speed * delta_time;
+
+    float selected_speed;
+
+    if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
+        selected_speed = slow_move_speed;
+    } else {
+        selected_speed = move_speed;
+    }
+
+    float delta_pos = selected_speed * delta_time;
 
     // Compute forward and right vectors
     glm::vec3 forward = transform.compute_forward_vector();
