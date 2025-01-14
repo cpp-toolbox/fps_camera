@@ -9,8 +9,10 @@ class FPSCamera {
     Transform transform;
     Mouse mouse;
 
-    float move_speed = 1;
-    float slow_move_speed = 0.25;
+    // this is how many units per second you will move at
+    float move_speed = 2;
+    float fast_move_speed = move_speed * 4;
+    float slow_move_speed = move_speed * .25;
     glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
     glm::mat4 projection;
 
@@ -25,7 +27,7 @@ class FPSCamera {
     void mouse_callback(double xpos, double ypos);
 
     glm::mat4 get_view_matrix() const;
-
+    glm::mat4 get_view_matrix_at(glm::vec3 position) const;
     glm::mat4 get_projection_matrix() const;
 };
 

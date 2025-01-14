@@ -20,6 +20,8 @@ void FPSCamera::process_input(GLFWwindow *window, float delta_time) {
 
     if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
         selected_speed = slow_move_speed;
+    } else if (glfwGetKey(window, GLFW_KEY_TAB) == GLFW_PRESS) {
+        selected_speed = fast_move_speed;
     } else {
         selected_speed = move_speed;
     }
@@ -69,6 +71,10 @@ void FPSCamera::mouse_callback(double xpos, double ypos) {
 glm::mat4 FPSCamera::get_view_matrix() const {
     return glm::lookAt(transform.position, transform.position + transform.compute_forward_vector(),
                        glm::vec3(0.0f, 1.0f, 0.0f));
+}
+
+glm::mat4 FPSCamera::get_view_matrix_at(glm::vec3 position) const {
+    return glm::lookAt(position, position + transform.compute_forward_vector(), glm::vec3(0.0f, 1.0f, 0.0f));
 }
 
 // Returns the projection matrix
