@@ -16,6 +16,11 @@ class FPSCamera {
     glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
     glm::mat4 projection;
 
+    bool camera_frozen = false;
+    void toggle_mouse_freeze();
+    void freeze_camera();
+    void unfreeze_camera();
+
     FPSCamera(glm::vec3 startPosition = glm::vec3(0.0f, 0.0f, 3.0f), double user_sensitivity = 1.0,
               float screen_width = 800.0f, float screen_height = 600.0f,
               float fov = 45.0f,        // Field of view (default: 45 degrees)

@@ -52,10 +52,17 @@ void FPSCamera::process_input(GLFWwindow *window, float delta_time) {
     }
 }
 
+void FPSCamera::toggle_mouse_freeze() { camera_frozen = not camera_frozen; }
+void FPSCamera::freeze_camera() { camera_frozen = true; }
+void FPSCamera::unfreeze_camera() { camera_frozen = false; }
+
 // Processes mouse input for camera rotation using the Mouse class
 void FPSCamera::mouse_callback(double xpos, double ypos) {
     // Get the yaw and pitch deltas from the Mouse class
     auto [yaw_delta, pitch_delta] = mouse.get_yaw_pitch_deltas(xpos, ypos);
+
+    if (camera_frozen)
+        return;
 
     transform.rotation.y -= yaw_delta;   // Yaw
     transform.rotation.x += pitch_delta; // Pitch
