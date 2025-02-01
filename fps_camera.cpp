@@ -3,11 +3,12 @@
 FPSCamera::FPSCamera(glm::vec3 start_position, double user_sensitivity, float screen_width, float screen_height,
                      float fov, float near_plane, float far_plane)
     : mouse(user_sensitivity) {
-    transform.position = start_position; 
+    transform.position = start_position;
     projection = glm::perspective(glm::radians(fov), screen_width / screen_height, near_plane, far_plane);
 }
 
-void FPSCamera::process_input(bool slow_move_pressed, bool fast_move_pressed, bool forward_pressed, bool left_pressed, bool backward_pressed, bool right_pressed, float delta_time) {
+void FPSCamera::process_input(bool slow_move_pressed, bool fast_move_pressed, bool forward_pressed, bool left_pressed,
+                              bool backward_pressed, bool right_pressed, float delta_time) {
 
     float selected_speed;
 
@@ -24,20 +25,24 @@ void FPSCamera::process_input(bool slow_move_pressed, bool fast_move_pressed, bo
     // Compute forward and right vectors
     glm::vec3 forward = transform.compute_forward_vector();
     glm::vec3 right = glm::normalize(glm::cross(forward, up)); // Up vector is (0, 1, 0)
-    
+
     glm::vec3 movement(0.0f);
 
-    if (forward_pressed) movement += forward;
-    if (backward_pressed) movement -= forward;
-    if (left_pressed) movement -= right;
-    if (right_pressed) movement += right;
+    if (forward_pressed)
+        movement += forward;
+    if (backward_pressed)
+        movement -= forward;
+    if (left_pressed)
+        movement -= right;
+    if (right_pressed)
+        movement += right;
 
     if (glm::length(movement) > 0.0f) {
         movement = glm::normalize(movement);
     }
 
     transform.position += movement * delta_pos;
-} 
+}
 
 void FPSCamera::toggle_mouse_freeze() { camera_frozen = not camera_frozen; }
 void FPSCamera::freeze_camera() { camera_frozen = true; }
@@ -51,11 +56,11 @@ void FPSCamera::mouse_callback(double xpos, double ypos) {
 
     transform.rotation.y -= yaw_delta;   // Yaw
     transform.rotation.x += pitch_delta; // Pitch
-
-    if (transform.rotation.x > 89.0f)
-        transform.rotation.x = 89.0f;
-    if (transform.rotation.x < -89.0f)
-        transform.rotation.x = -89.0f;
+    float epsilon = .01;
+    if (transform.rotation.x > .25 - epsilon)
+        transform.rotation.x = .25;
+    if (transform.rotation.x < -.25 + epsilon)
+        transform.rotation.x = -.25;
 }
 
 glm::mat4 FPSCamera::get_view_matrix() const {
