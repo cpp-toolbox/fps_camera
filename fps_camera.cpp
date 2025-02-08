@@ -8,7 +8,8 @@ FPSCamera::FPSCamera(glm::vec3 start_position, double user_sensitivity, float sc
 }
 
 void FPSCamera::process_input(bool slow_move_pressed, bool fast_move_pressed, bool forward_pressed, bool left_pressed,
-                              bool backward_pressed, bool right_pressed, float delta_time) {
+                              bool backward_pressed, bool right_pressed, bool up_pressed, bool down_pressed,
+                              float delta_time) {
 
     float selected_speed;
 
@@ -36,6 +37,10 @@ void FPSCamera::process_input(bool slow_move_pressed, bool fast_move_pressed, bo
         movement -= right;
     if (right_pressed)
         movement += right;
+    if (up_pressed)
+        movement += up;
+    if (down_pressed)
+        movement -= up;
 
     if (glm::length(movement) > 0.0f) {
         movement = glm::normalize(movement);
@@ -58,9 +63,9 @@ void FPSCamera::mouse_callback(double xpos, double ypos) {
     transform.rotation.x += pitch_delta; // Pitch
     float epsilon = .0001;
     if (transform.rotation.x > .25 - epsilon)
-        transform.rotation.x = .25;
+        transform.rotation.x = .25 - epsilon;
     if (transform.rotation.x < -.25 + epsilon)
-        transform.rotation.x = -.25;
+        transform.rotation.x = -.25 + epsilon;
 }
 
 glm::mat4 FPSCamera::get_view_matrix() const {
