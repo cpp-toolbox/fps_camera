@@ -56,7 +56,7 @@ void FPSCamera::mouse_callback(double xpos, double ypos) {
 
     transform.rotation.y -= yaw_delta;   // Yaw
     transform.rotation.x += pitch_delta; // Pitch
-    float epsilon = .01;
+    float epsilon = .0001;
     if (transform.rotation.x > .25 - epsilon)
         transform.rotation.x = .25;
     if (transform.rotation.x < -.25 + epsilon)
