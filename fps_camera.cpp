@@ -1,12 +1,10 @@
 #include "fps_camera.hpp"
 #include <cmath> // For std::tan and M_PI
 
-FPSCamera::FPSCamera(const unsigned int &screen_width_px, const unsigned int &screen_height_px,
-                     glm::vec3 start_position, double user_sensitivity, float fov, float zoom_fov, float near_plane,
+FPSCamera::FPSCamera(glm::vec3 start_position, double user_sensitivity, float fov, float zoom_fov, float near_plane,
                      float far_plane)
     : original_user_sensitivity(user_sensitivity), user_sensitivity(user_sensitivity), mouse(user_sensitivity),
-      original_fov(fov), fov(fov), zoom_fov(zoom_fov), near_plane(near_plane), far_plane(far_plane),
-      screen_width_px(screen_width_px), screen_height_px(screen_height_px) {
+      original_fov(fov), fov(fov), zoom_fov(zoom_fov), near_plane(near_plane), far_plane(far_plane) {
     transform.position = start_position;
 }
 
@@ -118,7 +116,8 @@ glm::mat4 FPSCamera::get_view_matrix_at(glm::vec3 position) const {
 // TODO: there is a bug here when screen_width and screen_height externally so then screen width and screen height are
 // out of date
 
-glm::mat4 FPSCamera::get_projection_matrix() const {
+glm::mat4 FPSCamera::get_projection_matrix(const unsigned int screen_width_px,
+                                           const unsigned int screen_height_px) const {
     std::cout << "Calculating projection matrix: "
               << "fov = " << fov << " degrees, "
               << "aspect_ratio = " << static_cast<float>(screen_width_px) / static_cast<float>(screen_height_px) << " ("

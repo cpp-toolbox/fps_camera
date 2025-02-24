@@ -23,14 +23,10 @@ class FPSCamera {
     bool zoomed_in;
     float original_fov, fov, zoom_fov, near_plane, far_plane;
 
-    const unsigned int &screen_width_px;
-    const unsigned int &screen_height_px;
-
     double original_user_sensitivity;
     double user_sensitivity;
 
-    FPSCamera(const unsigned int &screen_width, const unsigned int &screen_height,
-              glm::vec3 start_position = glm::vec3(0.0f, 0.0f, 0.0f), double user_sensitivity = 1.0,
+    FPSCamera(glm::vec3 start_position = glm::vec3(0.0f, 0.0f, 0.0f), double user_sensitivity = 1.0,
               float fov = 90.0f,         // Field of view in degrees
               float zoom_fov = 30.0f,    // Field of view in degrees
               float near_plane = 0.01f,  // Near clipping plane
@@ -47,7 +43,7 @@ class FPSCamera {
 
     glm::mat4 get_view_matrix() const;
     glm::mat4 get_view_matrix_at(glm::vec3 position) const;
-    glm::mat4 get_projection_matrix() const;
+    glm::mat4 get_projection_matrix(const unsigned int screen_width_px, const unsigned int screen_height_px) const;
 };
 
 #endif // FPS_CAMERA_HPP
