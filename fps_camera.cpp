@@ -33,7 +33,7 @@ void FPSCamera::toggle_zoom() {
 
 void FPSCamera::zoom_in() {
     zoomed_in = true;
-    user_sensitivity = compute_new_sensitivity(original_user_sensitivity, fov, zoom_fov);
+    user_sensitivity = compute_new_sensitivity(original_user_sensitivity, original_fov, zoom_fov);
     fov = zoom_fov;
     mouse.user_sensitivity = user_sensitivity;
 }
