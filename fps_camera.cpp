@@ -1,10 +1,48 @@
 #include "fps_camera.hpp"
+#include <cmath> // For std::tan and M_PI
 
-FPSCamera::FPSCamera(glm::vec3 start_position, double user_sensitivity, float screen_width, float screen_height,
-                     float fov, float near_plane, float far_plane)
-    : mouse(user_sensitivity) {
+FPSCamera::FPSCamera(const unsigned int &screen_width_px, const unsigned int &screen_height_px,
+                     glm::vec3 start_position, double user_sensitivity, float fov, float zoom_fov, float near_plane,
+                     float far_plane)
+    : original_user_sensitivity(user_sensitivity), user_sensitivity(user_sensitivity), mouse(user_sensitivity),
+      original_fov(fov), fov(fov), zoom_fov(zoom_fov), near_plane(near_plane), far_plane(far_plane),
+      screen_width_px(screen_width_px), screen_height_px(screen_height_px) {
     transform.position = start_position;
-    projection = glm::perspective(glm::radians(fov), screen_width / screen_height, near_plane, far_plane);
+}
+
+float compute_new_sensitivity(float original_sensitivity, float original_fov, float new_fov) {
+    float original_fov_rad = original_fov * (M_PI / 180.0f);
+    float new_fov_rad = new_fov * (M_PI / 180.0f);
+
+    float half_original_fov = original_fov_rad / 2.0f;
+    float half_new_fov = new_fov_rad / 2.0f;
+
+    float tan_half_original_fov = std::tan(half_original_fov);
+    float tan_half_new_fov = std::tan(half_new_fov);
+
+    float new_sensitivity = original_sensitivity * (tan_half_new_fov / tan_half_original_fov);
+
+    return new_sensitivity;
+}
+
+void FPSCamera::toggle_zoom() {
+    if (zoomed_in) {
+        zoom_out();
+    } else {
+        zoom_in();
+    }
+}
+
+void FPSCamera::zoom_in() {
+    user_sensitivity = compute_new_sensitivity(original_user_sensitivity, fov, zoom_fov);
+    fov = zoom_fov;
+    mouse.user_sensitivity = user_sensitivity;
+}
+void FPSCamera::zoom_out() {
+    user_sensitivity = original_user_sensitivity;
+    fov = original_fov;
+    /*mouse.user_sensitivity = user_sensitivity;*/
+    mouse.user_sensitivity = 0;
 }
 
 void FPSCamera::process_input(bool slow_move_pressed, bool fast_move_pressed, bool forward_pressed, bool left_pressed,
@@ -77,4 +115,18 @@ glm::mat4 FPSCamera::get_view_matrix_at(glm::vec3 position) const {
     return glm::lookAt(position, position + transform.compute_forward_vector(), glm::vec3(0.0f, 1.0f, 0.0f));
 }
 
-glm::mat4 FPSCamera::get_projection_matrix() const { return projection; }
+// TODO: there is a bug here when screen_width and screen_height externally so then screen width and screen height are
+// out of date
+
+glm::mat4 FPSCamera::get_projection_matrix() const {
+    std::cout << "Calculating projection matrix: "
+              << "fov = " << fov << " degrees, "
+              << "aspect_ratio = " << static_cast<float>(screen_width_px) / static_cast<float>(screen_height_px) << " ("
+              << screen_width_px << " / " << screen_height_px << "), "
+              << "near_plane = " << near_plane << ", "
+              << "far_plane = " << far_plane << std::endl;
+
+    return glm::perspective(glm::radians(fov),
+                            static_cast<float>(screen_width_px) / static_cast<float>(screen_height_px), near_plane,
+                            far_plane);
+}

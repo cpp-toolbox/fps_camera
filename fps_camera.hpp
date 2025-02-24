@@ -20,11 +20,25 @@ class FPSCamera {
     void freeze_camera();
     void unfreeze_camera();
 
-    FPSCamera(glm::vec3 start_position = glm::vec3(0.0f, 0.0f, 0.0f), double user_sensitivity = 1.0,
-              float screen_width = 800.0f, float screen_height = 600.0f,
+    bool zoomed_in;
+    float original_fov, fov, zoom_fov, near_plane, far_plane;
+
+    const unsigned int &screen_width_px;
+    const unsigned int &screen_height_px;
+
+    double original_user_sensitivity;
+    double user_sensitivity;
+
+    FPSCamera(const unsigned int &screen_width, const unsigned int &screen_height,
+              glm::vec3 start_position = glm::vec3(0.0f, 0.0f, 0.0f), double user_sensitivity = 1.0,
               float fov = 90.0f,         // Field of view in degrees
+              float zoom_fov = 30.0f,    // Field of view in degrees
               float near_plane = 0.01f,  // Near clipping plane
               float far_plane = 200.0f); // Far clipping plane
+
+    void toggle_zoom();
+    void zoom_in();
+    void zoom_out();
 
     void process_input(bool slow_move_pressed, bool fast_move_pressed, bool forward_pressed, bool left_pressed,
                        bool backward_pressed, bool right_pressed, bool up_pressed, bool down_pressed, float delta_time);
