@@ -32,15 +32,17 @@ void FPSCamera::toggle_zoom() {
 }
 
 void FPSCamera::zoom_in() {
+    zoomed_in = true;
     user_sensitivity = compute_new_sensitivity(original_user_sensitivity, fov, zoom_fov);
     fov = zoom_fov;
     mouse.user_sensitivity = user_sensitivity;
 }
 void FPSCamera::zoom_out() {
+    zoomed_in = false;
     user_sensitivity = original_user_sensitivity;
     fov = original_fov;
     /*mouse.user_sensitivity = user_sensitivity;*/
-    mouse.user_sensitivity = 0;
+    mouse.user_sensitivity = user_sensitivity;
 }
 
 void FPSCamera::process_input(bool slow_move_pressed, bool fast_move_pressed, bool forward_pressed, bool left_pressed,
