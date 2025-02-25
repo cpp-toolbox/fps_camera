@@ -8,6 +8,7 @@ FPSCamera::FPSCamera(glm::vec3 start_position, double user_sensitivity, float fo
     transform.position = start_position;
 }
 
+// https://toolbox.cuppajoeman.com/programming/game_dev/fov_and_sensitivity.html
 float compute_new_sensitivity(float original_sensitivity, float original_fov, float new_fov) {
     float original_fov_rad = original_fov * (M_PI / 180.0f);
     float new_fov_rad = new_fov * (M_PI / 180.0f);
