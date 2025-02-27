@@ -41,7 +41,7 @@ class FPSCamera {
     void process_input(bool slow_move_pressed, bool fast_move_pressed, bool forward_pressed, bool left_pressed,
                        bool backward_pressed, bool right_pressed, bool up_pressed, bool down_pressed, float delta_time);
 
-    void mouse_callback(double xpos, double ypos);
+    void mouse_callback(double xpos, double ypos, double sensitivity_override = -1);
 
     glm::mat4 get_view_matrix() const;
     glm::mat4 get_view_matrix_at(glm::vec3 position) const;

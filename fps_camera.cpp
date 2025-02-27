@@ -1,6 +1,6 @@
 #include "fps_camera.hpp"
 #include <cmath> // For std::tan and M_PI
-		 
+
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif
@@ -12,7 +12,7 @@ FPSCamera::FPSCamera(glm::vec3 start_position, double user_sensitivity, float fo
     transform.position = start_position;
 }
 
-// https://toolbox.cuppajoeman.com/programming/game_dev/fov_and_sensitivity.html
+// NOTE: https://toolbox.cuppajoeman.com/programming/game_dev/fov_and_sensitivity.html
 float compute_new_sensitivity(float original_sensitivity, float original_fov, float new_fov) {
     float original_fov_rad = original_fov * (M_PI / 180.0f);
     float new_fov_rad = new_fov * (M_PI / 180.0f);
@@ -98,8 +98,8 @@ void FPSCamera::toggle_mouse_freeze() { camera_frozen = not camera_frozen; }
 void FPSCamera::freeze_camera() { camera_frozen = true; }
 void FPSCamera::unfreeze_camera() { camera_frozen = false; }
 
-void FPSCamera::mouse_callback(double xpos, double ypos) {
-    auto [yaw_delta, pitch_delta] = mouse.get_yaw_pitch_deltas(xpos, ypos);
+void FPSCamera::mouse_callback(double xpos, double ypos, double sensitivity_override) {
+    auto [yaw_delta, pitch_delta] = mouse.get_yaw_pitch_deltas(xpos, ypos, sensitivity_override);
 
     if (camera_frozen)
         return;
@@ -127,13 +127,6 @@ glm::mat4 FPSCamera::get_view_matrix_at(glm::vec3 position) const {
 
 glm::mat4 FPSCamera::get_projection_matrix(const unsigned int screen_width_px,
                                            const unsigned int screen_height_px) const {
-    std::cout << "Calculating projection matrix: "
-              << "fov = " << fov << " degrees, "
-              << "aspect_ratio = " << static_cast<float>(screen_width_px) / static_cast<float>(screen_height_px) << " ("
-              << screen_width_px << " / " << screen_height_px << "), "
-              << "near_plane = " << near_plane << ", "
-              << "far_plane = " << far_plane << std::endl;
-
     return glm::perspective(glm::radians(fov),
                             static_cast<float>(screen_width_px) / static_cast<float>(screen_height_px), near_plane,
                             far_plane);
