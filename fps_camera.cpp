@@ -3,7 +3,7 @@
 
 FPSCamera::FPSCamera(glm::vec3 start_position, double user_sensitivity, float fov, float zoom_fov, float near_plane,
                      float far_plane)
-    : original_user_sensitivity(user_sensitivity), user_sensitivity(user_sensitivity), mouse(user_sensitivity),
+    : unscoped_sensitivity(user_sensitivity), active_sensitivity(user_sensitivity), mouse(user_sensitivity),
       original_fov(fov), fov(fov), zoom_fov(zoom_fov), near_plane(near_plane), far_plane(far_plane) {
     transform.position = start_position;
 }
@@ -32,18 +32,20 @@ void FPSCamera::toggle_zoom() {
     }
 }
 
+void FPSCamera::change_active_sensitivity(double new_sens) {
+    active_sensitivity = new_sens;
+    mouse.user_sensitivity = active_sensitivity;
+}
+
 void FPSCamera::zoom_in() {
     zoomed_in = true;
-    user_sensitivity = compute_new_sensitivity(original_user_sensitivity, original_fov, zoom_fov);
     fov = zoom_fov;
-    mouse.user_sensitivity = user_sensitivity;
+    change_active_sensitivity(compute_new_sensitivity(unscoped_sensitivity, original_fov, zoom_fov));
 }
 void FPSCamera::zoom_out() {
     zoomed_in = false;
-    user_sensitivity = original_user_sensitivity;
     fov = original_fov;
-    /*mouse.user_sensitivity = user_sensitivity;*/
-    mouse.user_sensitivity = user_sensitivity;
+    change_active_sensitivity(unscoped_sensitivity);
 }
 
 void FPSCamera::process_input(bool slow_move_pressed, bool fast_move_pressed, bool forward_pressed, bool left_pressed,

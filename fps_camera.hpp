@@ -23,8 +23,8 @@ class FPSCamera {
     bool zoomed_in;
     float original_fov, fov, zoom_fov, near_plane, far_plane;
 
-    double original_user_sensitivity;
-    double user_sensitivity;
+    double unscoped_sensitivity;
+    double active_sensitivity;
 
     FPSCamera(glm::vec3 start_position = glm::vec3(0.0f, 0.0f, 0.0f), double user_sensitivity = 1.0,
               float fov = 90.0f,         // Field of view in degrees
@@ -33,6 +33,8 @@ class FPSCamera {
               float far_plane = 200.0f); // Far clipping plane
 
     void toggle_zoom();
+
+    void change_active_sensitivity(double new_sens);
     void zoom_in();
     void zoom_out();
 
