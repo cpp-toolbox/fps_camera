@@ -1,5 +1,9 @@
 #include "fps_camera.hpp"
 #include <cmath> // For std::tan and M_PI
+		 
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
 
 FPSCamera::FPSCamera(glm::vec3 start_position, double user_sensitivity, float fov, float zoom_fov, float near_plane,
                      float far_plane)
