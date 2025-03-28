@@ -30,7 +30,7 @@ class FPSCamera {
               float fov = 90.0f,         // Field of view in degrees
               float zoom_fov = 30.0f,    // Field of view in degrees
               float near_plane = 0.01f,  // Near clipping plane
-              float far_plane = 200.0f); // Far clipping plane
+              float far_plane = 300.0f); // Far clipping plane
 
     void toggle_zoom();
 
