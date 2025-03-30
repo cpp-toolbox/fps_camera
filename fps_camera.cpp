@@ -9,7 +9,7 @@ FPSCamera::FPSCamera(glm::vec3 start_position, double user_sensitivity, float fo
                      float far_plane)
     : unscoped_sensitivity(user_sensitivity), active_sensitivity(user_sensitivity), mouse(user_sensitivity),
       original_fov(fov), fov(fov), zoom_fov(zoom_fov), near_plane(near_plane), far_plane(far_plane) {
-    transform.set_position(start_position);
+    transform.set_translation(start_position);
 }
 
 // NOTE: https://toolbox.cuppajoeman.com/programming/game_dev/fov_and_sensitivity.html
@@ -91,7 +91,7 @@ void FPSCamera::process_input(bool slow_move_pressed, bool fast_move_pressed, bo
         movement = glm::normalize(movement);
     }
 
-    transform.add_position(movement * delta_pos);
+    transform.add_translation(movement * delta_pos);
 }
 
 void FPSCamera::toggle_mouse_freeze() { camera_frozen = not camera_frozen; }
