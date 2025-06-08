@@ -44,6 +44,7 @@ class FPSCamera {
     void mouse_callback(double xpos, double ypos, double sensitivity_override = -1);
 
     glm::mat4 get_view_matrix() const;
+    glm::mat4 get_third_person_view_matrix() const;
     glm::mat4 get_view_matrix_at(glm::vec3 position) const;
     glm::mat4 get_projection_matrix(const unsigned int screen_width_px, const unsigned int screen_height_px) const;
 };

@@ -118,6 +118,18 @@ glm::mat4 FPSCamera::get_view_matrix() const {
                        glm::vec3(0.0f, 1.0f, 0.0f));
 }
 
+glm::mat4 FPSCamera::get_third_person_view_matrix() const {
+    // Offset behind the player; tweak this as needed
+    float distance_behind = 2.0f;
+    float height_offset = 2.0f;
+
+    glm::vec3 player_position = transform.get_translation();
+    glm::vec3 forward = transform.compute_forward_vector();
+    glm::vec3 camera_position = player_position - forward * distance_behind + glm::vec3(0.0f, height_offset, 0.0f);
+
+    return glm::lookAt(camera_position, player_position + forward * 1.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+}
+
 glm::mat4 FPSCamera::get_view_matrix_at(glm::vec3 position) const {
     return glm::lookAt(position, position + transform.compute_forward_vector(), glm::vec3(0.0f, 1.0f, 0.0f));
 }
