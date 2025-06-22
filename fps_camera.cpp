@@ -139,7 +139,7 @@ glm::mat4 FPSCamera::get_view_matrix_at(glm::vec3 position) const {
 
 glm::mat4 FPSCamera::get_projection_matrix(const unsigned int screen_width_px,
                                            const unsigned int screen_height_px) const {
-    return glm::perspective(glm::radians(fov),
+    return glm::perspective(glm::radians(fov.get()),
                             static_cast<float>(screen_width_px) / static_cast<float>(screen_height_px), near_plane,
                             far_plane);
 }

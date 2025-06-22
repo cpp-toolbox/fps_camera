@@ -3,6 +3,8 @@
 
 #include "sbpt_generated_includes.hpp"
 
+#include <functional>
+
 class FPSCamera {
   public:
     Transform transform;
@@ -21,7 +23,9 @@ class FPSCamera {
     void unfreeze_camera();
 
     bool zoomed_in;
-    float original_fov, fov, zoom_fov, near_plane, far_plane;
+    float original_fov, zoom_fov, near_plane, far_plane;
+
+    Observable<float> fov;
 
     double unscoped_sensitivity;
     double active_sensitivity;
