@@ -4,6 +4,7 @@
 #include "sbpt_generated_includes.hpp"
 
 #include <functional>
+#include <glm/ext/matrix_transform.hpp>
 
 // NOTE: we define a frustum by the area enclosed by 6 planes
 struct Frustum {
@@ -160,6 +161,84 @@ class FPSCamera : public ICamera {
     glm::mat4 get_view_matrix_at(glm::vec3 position) const;
     // NOTE: this applies the projection to the view matrix
     glm::mat4 get_projection_matrix() const override;
+};
+
+struct Camera2D : ICamera {
+    float zoom = 1.0f;
+
+    glm::vec2 offset = glm::vec2(0);
+
+    double last_mouse_pos_x = 0.0f;
+    double last_mouse_pos_y = 0.0f;
+
+    bool is_dragging = false;
+
+    unsigned int &screen_width_px, &screen_height_px;
+
+    Camera2D(unsigned int &screen_width_px, unsigned int &screen_height_px)
+        : screen_width_px(screen_width_px), screen_height_px(screen_height_px) {}
+
+    Frustum get_visible_frustum_world_space() override {
+        float aspect = 1.0f; // caller can set actual aspect
+        float view_width = zoom * aspect;
+        float view_height = zoom;
+
+        // corners of the ortho box
+        glm::vec3 nbl(-view_width + offset.x, -view_height + offset.y, -1.0f);
+        glm::vec3 nbr(view_width + offset.x, -view_height + offset.y, -1.0f);
+        glm::vec3 ntl(-view_width + offset.x, view_height + offset.y, -1.0f);
+        glm::vec3 ntr(view_width + offset.x, view_height + offset.y, -1.0f);
+
+        glm::vec3 fbl(-view_width + offset.x, -view_height + offset.y, 1.0f);
+        glm::vec3 fbr(view_width + offset.x, -view_height + offset.y, 1.0f);
+        glm::vec3 ftl(-view_width + offset.x, view_height + offset.y, 1.0f);
+        glm::vec3 ftr(view_width + offset.x, view_height + offset.y, 1.0f);
+
+        // build planes just like in 3D
+        auto left = linalg_utils::Plane(nbl, fbl, ftl);
+        auto right = linalg_utils::Plane(nbr, ntr, ftr);
+        auto bottom = linalg_utils::Plane(nbl, nbr, fbr);
+        auto top = linalg_utils::Plane(ntl, ftl, ftr);
+        auto near = linalg_utils::Plane(ntl, ntr, nbr);
+        auto far = linalg_utils::Plane(ftr, ftl, fbl);
+
+        return {left, right, bottom, top, near, far};
+    }
+
+    glm::mat4 get_view_matrix() const override {
+        // because we bake position info into projection which is weird fix later
+        return glm::mat4(1);
+    }
+
+    // NOTE: yeah this is kinda dumb, fix it up when it matters
+    glm::mat4 get_projection_matrix() const override { return get_transform_matrix(); }
+
+    glm::mat4 get_transform_matrix() const {
+        float aspect = static_cast<float>(screen_width_px) / screen_height_px;
+        float view_width = zoom * aspect;
+        float view_height = zoom;
+
+        glm::mat4 projection = glm::ortho(-view_width + offset.x, view_width + offset.x, -view_height + offset.y,
+                                          view_height + offset.y, -1.0f, 1.0f);
+        return projection;
+    }
+
+    void on_scroll(double x_offset, double y_offset) {
+        if (y_offset > 0) {
+            zoom /= 1.1;
+        } else {
+            zoom *= 1.1;
+        }
+    }
+
+    // TODO: one day I want to implement that "momentum style of dragging"
+    void update(double mouse_delta_x, double mouse_delta_y, unsigned int width, unsigned int height, bool is_dragging) {
+        if (is_dragging) {
+            float aspect = static_cast<float>(width) / height;
+            offset.x -= static_cast<float>(mouse_delta_x) / width * zoom * aspect * 2.0f;
+            offset.y += static_cast<float>(mouse_delta_y) / height * zoom * 2.0f;
+        }
+    }
 };
 
 #endif // FPS_CAMERA_HPP
