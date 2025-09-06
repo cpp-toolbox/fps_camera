@@ -11,6 +11,7 @@ struct Frustum {
     std::array<linalg_utils::Plane, 6> planes;
 
     // TODO: need to figure out why this function works at all...
+    // this is mainly used for frustum culling
     template <typename Container> bool intersects_points(const Container &points) const {
         for (const auto &plane : planes) {
             bool all_outside = true;
@@ -29,11 +30,99 @@ struct Frustum {
     }
 };
 
+// NOTE: if we ever need to redo this then I want to redo it by using connect n-gon from vertex geom.
+// draw_info::IndexedVertexPositions generate_frustum_ivp(bool center_at_origin = false) {
+//     // Camera params
+//     float aspect = static_cast<float>(screen_width_px) / screen_height_px;
+//     float fov_y = glm::radians(camera.fov.get()); // vertical FOV
+//     float near_z = camera.near_plane;
+//     float far_z = camera.far_plane;
+//     far_z = 2;
+//
+//     // Half-sizes of near/far planes
+//     float tan_half_fov_y = tanf(fov_y * 0.5f);
+//     float near_height = 2.0f * near_z * tan_half_fov_y;
+//     float near_width = near_height * aspect;
+//     float far_height = 2.0f * far_z * tan_half_fov_y;
+//     float far_width = far_height * aspect;
+//
+//     // Define frustum corners in camera space
+//     std::array<glm::vec3, 8> cam_corners = {
+//         // Near plane
+//         glm::vec3(-near_width / 2, -near_height / 2, -near_z), glm::vec3(near_width / 2, -near_height / 2,
+//         -near_z), glm::vec3(-near_width / 2, near_height / 2, -near_z), glm::vec3(near_width / 2, near_height /
+//         2, -near_z),
+//         // Far plane
+//         glm::vec3(-far_width / 2, -far_height / 2, -far_z), glm::vec3(far_width / 2, -far_height / 2, -far_z),
+//         glm::vec3(-far_width / 2, far_height / 2, -far_z), glm::vec3(far_width / 2, far_height / 2, -far_z)};
+//
+//     std::vector<glm::vec3> world_corners;
+//     world_corners.reserve(8);
+//
+//     // --- Manually construct TRS matrix from Transform ---
+//     glm::vec3 t = camera.transform.get_translation();
+//     glm::vec3 s = camera.transform.get_scale();
+//     glm::vec3 r = camera.transform.get_rotation(); // in turns (0..1)
+//     glm::vec3 r_rad = r * glm::two_pi<float>();    // convert turns to radians
+//
+//     // Translation matrix
+//     glm::mat4 T = glm::translate(glm::mat4(1.0f), t);
+//
+//     // Rotation matrices (Euler order: pitch=X, yaw=Y, roll=Z)
+//     glm::mat4 Rx = glm::rotate(glm::mat4(1.0f), r_rad.x, glm::vec3(1, 0, 0));
+//     glm::mat4 Ry = glm::rotate(glm::mat4(1.0f), -r_rad.y - glm::two_pi<float>() / 4, glm::vec3(0, 1, 0));
+//     glm::mat4 Rz = glm::rotate(glm::mat4(1.0f), r_rad.z, glm::vec3(0, 0, 1));
+//     glm::mat4 R = Ry * Rx * Rz; // assuming YXZ order (common for FPS camera)
+//
+//     // Scale matrix
+//     glm::mat4 S = glm::scale(glm::mat4(1.0f), s);
+//
+//     // Combine to world matrix
+//     glm::mat4 world_matrix = T * R * S; // TRS order
+//
+//     for (auto &c : cam_corners) {
+//         glm::vec4 world = world_matrix * glm::vec4(c, 1.0f);
+//         world_corners.push_back(glm::vec3(world));
+//     }
+//
+//     if (center_at_origin) {
+//         for (auto &p : world_corners) {
+//             p -= t; // shift apex to origin
+//         }
+//     }
+//
+//     // Triangle indices
+//     std::vector<unsigned int> indices = {
+//         0, 1, 2, 1, 3, 2, // near
+//         4, 6, 5, 5, 6, 7, // far
+//         0, 2, 4, 2, 6, 4, // left
+//         1, 5, 3, 3, 5, 7, // right
+//         2, 3, 6, 3, 7, 6, // top
+//         0, 4, 1, 1, 4, 5  // bottom
+//     };
+//
+//     return draw_info::IndexedVertexPositions(indices, world_corners);
+// }
+
+inline std::array<glm::vec3, 8> get_aabb_corners_world(const vertex_geometry::AxisAlignedBoundingBox &box,
+                                                       Transform &transform) {
+    glm::mat4 model = transform.get_transform_matrix();
+    std::array<glm::vec3, 8> corners = box.get_corners();
+    for (auto &c : corners) {
+        glm::vec4 world = model * glm::vec4(c, 1.0f);
+        c = glm::vec3(world);
+    }
+    return corners;
+}
+
 struct ICamera {
     virtual ~ICamera() = default;
     virtual glm::mat4 get_view_matrix() const = 0;
     virtual glm::mat4 get_projection_matrix() const = 0;
+    // TODO: remove the below one
     virtual Frustum get_visible_frustum_world_space() = 0;
+    virtual bool is_visible(const std::vector<glm::vec3> &xyz_positions, Transform &transform) = 0;
+    virtual bool is_visible(const vertex_geometry::AxisAlignedBoundingBox &aabb, Transform &transform) = 0;
     Transform transform;
 };
 
@@ -150,6 +239,19 @@ class FPSCamera : public ICamera {
         return {left, right, bottom, top, near, far};
     }
 
+    bool is_visible(const std::vector<glm::vec3> &xyz_positions, Transform &transform) override {
+        LogSection _(global_logger, "is_visible");
+        auto local_aabb = vertex_geometry::AxisAlignedBoundingBox(xyz_positions);
+        return is_visible(local_aabb, transform);
+    }
+
+    bool is_visible(const vertex_geometry::AxisAlignedBoundingBox &aabb, Transform &transform) override {
+        LogSection _(global_logger, "is_visible");
+        auto frustum = get_visible_frustum_world_space();
+        auto corners = get_aabb_corners_world(aabb, transform);
+        return frustum.intersects_points(corners);
+    }
+
     void process_input(bool slow_move_pressed, bool fast_move_pressed, bool forward_pressed, bool left_pressed,
                        bool backward_pressed, bool right_pressed, bool up_pressed, bool down_pressed, float delta_time);
 
@@ -210,6 +312,46 @@ struct Camera2D : ICamera {
         return glm::mat4(1);
     }
 
+    bool is_visible(const std::vector<glm::vec3> &xyz_positions, Transform &transform) override {
+        LogSection _(global_logger, "is_visible");
+
+        // compute object aabb in local space
+        auto local_aabb = vertex_geometry::AxisAlignedBoundingBox(xyz_positions);
+
+        return is_visible(local_aabb, transform);
+    }
+
+    bool is_visible(const vertex_geometry::AxisAlignedBoundingBox &aabb, Transform &transform) override {
+        LogSection _(global_logger, "is_visible");
+
+        auto corners = aabb.get_corners();
+
+        // Transform corners into world space
+        glm::mat4 model = transform.get_transform_matrix();
+        glm::vec3 min_world(std::numeric_limits<float>::max());
+        glm::vec3 max_world(-std::numeric_limits<float>::max());
+        for (auto &c : corners) {
+            glm::vec4 world_c = model * glm::vec4(c, 1.0f);
+            min_world = glm::min(min_world, glm::vec3(world_c));
+            max_world = glm::max(max_world, glm::vec3(world_c));
+        }
+
+        // Now we have a world-space AABB
+        glm::vec2 aabb_min(min_world.x, min_world.y);
+        glm::vec2 aabb_max(max_world.x, max_world.y);
+
+        // Compute camera view rectangle
+        float aspect = static_cast<float>(screen_width_px) / screen_height_px;
+        float view_width = zoom * aspect;
+        float view_height = zoom;
+
+        glm::vec2 cam_min(-view_width + offset.x, -view_height + offset.y);
+        glm::vec2 cam_max(view_width + offset.x, view_height + offset.y);
+
+        // Check overlap (2D AABB vs AABB)
+        return !(aabb_max.x < cam_min.x || aabb_min.x > cam_max.x || aabb_max.y < cam_min.y || aabb_min.y > cam_max.y);
+    }
+
     // NOTE: yeah this is kinda dumb, fix it up when it matters
     glm::mat4 get_projection_matrix() const override { return get_transform_matrix(); }
 
@@ -235,8 +377,9 @@ struct Camera2D : ICamera {
     void update(double mouse_delta_x, double mouse_delta_y, unsigned int width, unsigned int height, bool is_dragging) {
         if (is_dragging) {
             float aspect = static_cast<float>(width) / height;
-            offset.x -= static_cast<float>(mouse_delta_x) / width * zoom * aspect * 2.0f;
-            offset.y += static_cast<float>(mouse_delta_y) / height * zoom * 2.0f;
+            float sensitivity = 10;
+            offset.x -= sensitivity * static_cast<float>(mouse_delta_x) / width * zoom * aspect * 2.0f;
+            offset.y += sensitivity * static_cast<float>(mouse_delta_y) / height * zoom * 2.0f;
         }
     }
 };
