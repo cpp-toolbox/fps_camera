@@ -233,10 +233,11 @@ class FPSCamera : public ICamera {
         auto right = linalg_utils::Plane(nbr, ntr, ftr);  // right
         auto bottom = linalg_utils::Plane(nbl, nbr, fbr); // bottom
         auto top = linalg_utils::Plane(ntl, ftl, ftr);    // top
-        auto near = linalg_utils::Plane(ntl, ntr, nbr);   // near
-        auto far = linalg_utils::Plane(ftr, ftl, fbl);    // far
+	// NOTE: on windows I get a compliation error because apparently near and far is a keyword so I'll append an underscore to fix this.
+        auto near_ = linalg_utils::Plane(ntl, ntr, nbr);   // near
+        auto far_ = linalg_utils::Plane(ftr, ftl, fbl);    // far
 
-        return {left, right, bottom, top, near, far};
+        return {left, right, bottom, top, near_, far_};
     }
 
     bool is_visible(const std::vector<glm::vec3> &xyz_positions, Transform &transform) override {
@@ -301,10 +302,11 @@ struct Camera2D : ICamera {
         auto right = linalg_utils::Plane(nbr, ntr, ftr);
         auto bottom = linalg_utils::Plane(nbl, nbr, fbr);
         auto top = linalg_utils::Plane(ntl, ftl, ftr);
-        auto near = linalg_utils::Plane(ntl, ntr, nbr);
-        auto far = linalg_utils::Plane(ftr, ftl, fbl);
+	// NOTE: on windows I get a compliation error because apparently near and far is a keyword so I'll append an underscore to fix this.
+        auto near_ = linalg_utils::Plane(ntl, ntr, nbr);
+        auto far_ = linalg_utils::Plane(ftr, ftl, fbl);
 
-        return {left, right, bottom, top, near, far};
+        return {left, right, bottom, top, near_, far_};
     }
 
     glm::mat4 get_view_matrix() const override {
