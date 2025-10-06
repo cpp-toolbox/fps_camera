@@ -233,9 +233,10 @@ class FPSCamera : public ICamera {
         auto right = linalg_utils::Plane(nbr, ntr, ftr);  // right
         auto bottom = linalg_utils::Plane(nbl, nbr, fbr); // bottom
         auto top = linalg_utils::Plane(ntl, ftl, ftr);    // top
-	// NOTE: on windows I get a compliation error because apparently near and far is a keyword so I'll append an underscore to fix this.
-        auto near_ = linalg_utils::Plane(ntl, ntr, nbr);   // near
-        auto far_ = linalg_utils::Plane(ftr, ftl, fbl);    // far
+        // NOTE: on windows I get a compliation error because apparently near and far is a keyword so I'll append an
+        // underscore to fix this.
+        auto near_ = linalg_utils::Plane(ntl, ntr, nbr); // near
+        auto far_ = linalg_utils::Plane(ftr, ftl, fbl);  // far
 
         return {left, right, bottom, top, near_, far_};
     }
@@ -258,11 +259,15 @@ class FPSCamera : public ICamera {
 
     void mouse_callback(double xpos, double ypos, double sensitivity_override = -1);
 
-    // NOTE: this gets the matrix that puts the camera in the right place and looking in the right place
+    /**
+     * @brief this is the matrix that puts the camera in the right place and looking in the right place
+     */
     glm::mat4 get_view_matrix() const override;
     glm::mat4 get_third_person_view_matrix() const;
     glm::mat4 get_view_matrix_at(glm::vec3 position) const;
-    // NOTE: this applies the projection to the view matrix
+    /**
+     * @brief the projection matrix is the one that takes the world and applies the perspective view on the world
+     */
     glm::mat4 get_projection_matrix() const override;
 };
 
@@ -302,7 +307,8 @@ struct Camera2D : ICamera {
         auto right = linalg_utils::Plane(nbr, ntr, ftr);
         auto bottom = linalg_utils::Plane(nbl, nbr, fbr);
         auto top = linalg_utils::Plane(ntl, ftl, ftr);
-	// NOTE: on windows I get a compliation error because apparently near and far is a keyword so I'll append an underscore to fix this.
+        // NOTE: on windows I get a compliation error because apparently near and far is a keyword so I'll append an
+        // underscore to fix this.
         auto near_ = linalg_utils::Plane(ntl, ntr, nbr);
         auto far_ = linalg_utils::Plane(ftr, ftl, fbl);
 
