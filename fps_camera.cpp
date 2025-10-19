@@ -53,9 +53,10 @@ void FPSCamera::zoom_out() {
     change_active_sensitivity(unscoped_sensitivity);
 }
 
-void FPSCamera::process_input(bool slow_move_pressed, bool fast_move_pressed, bool forward_pressed, bool left_pressed,
-                              bool backward_pressed, bool right_pressed, bool up_pressed, bool down_pressed,
-                              float delta_time) {
+void FPSCamera::update_position_based_on_keys_pressed(bool slow_move_pressed, bool fast_move_pressed,
+                                                      bool forward_pressed, bool left_pressed, bool backward_pressed,
+                                                      bool right_pressed, bool up_pressed, bool down_pressed,
+                                                      float delta_time) {
 
     float selected_speed;
 

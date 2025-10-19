@@ -254,8 +254,9 @@ class FPSCamera : public ICamera {
         return frustum.intersects_points(corners);
     }
 
-    void process_input(bool slow_move_pressed, bool fast_move_pressed, bool forward_pressed, bool left_pressed,
-                       bool backward_pressed, bool right_pressed, bool up_pressed, bool down_pressed, float delta_time);
+    void update_position_based_on_keys_pressed(bool slow_move_pressed, bool fast_move_pressed, bool forward_pressed,
+                                               bool left_pressed, bool backward_pressed, bool right_pressed,
+                                               bool up_pressed, bool down_pressed, float delta_time);
 
     void mouse_callback(double xpos, double ypos, double sensitivity_override = -1);
 
