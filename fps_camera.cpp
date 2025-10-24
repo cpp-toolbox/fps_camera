@@ -95,7 +95,7 @@ void FPSCamera::process_input(bool slow_move_pressed, bool fast_move_pressed, bo
     transform.add_translation(movement * delta_pos);
 }
 
-void FPSCamera::toggle_mouse_freeze() { camera_frozen = not camera_frozen; }
+void FPSCamera::toggle_camera_freeze() { camera_frozen = not camera_frozen; }
 void FPSCamera::freeze_camera() { camera_frozen = true; }
 void FPSCamera::unfreeze_camera() { camera_frozen = false; }
 

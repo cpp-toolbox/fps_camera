@@ -138,7 +138,7 @@ class FPSCamera : public ICamera {
     glm::mat4 projection;
 
     bool camera_frozen = false;
-    void toggle_mouse_freeze();
+    void toggle_camera_freeze();
     void freeze_camera();
     void unfreeze_camera();
 
