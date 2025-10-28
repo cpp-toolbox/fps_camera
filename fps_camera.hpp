@@ -147,7 +147,14 @@ class FPSCamera : public ICamera {
 
     Observable<float> fov;
 
+    /// @note sensitivity is stored here, then when updated it gets passed to the mouse to share the same one, there
+    /// needs to be a sharable value pattern.
+
+    /// @brief the unscoped sensitivity is the "default" or "base" sensitivity, which is used to derive the scoped in
+    /// sensitivity
     double unscoped_sensitivity;
+
+    /// @brief the active sensitivity represents whatever sensitivity is being used right now, it changes dynamically
     double active_sensitivity;
 
     unsigned int &screen_width_px;

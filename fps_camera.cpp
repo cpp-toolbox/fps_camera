@@ -116,7 +116,8 @@ void FPSCamera::mouse_callback(double xpos, double ypos, double sensitivity_over
 }
 
 glm::mat4 FPSCamera::get_view_matrix() const {
-    return glm::lookAt(transform.get_translation(), transform.get_translation() + transform.compute_forward_vector(),
+    return glm::lookAt(transform.get_full_translation(),
+                       transform.get_full_translation() + transform.compute_forward_vector(),
                        glm::vec3(0.0f, 1.0f, 0.0f));
 }
 
