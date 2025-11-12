@@ -98,13 +98,26 @@ void FPSCamera::update_position_based_on_keys_pressed(bool slow_move_pressed, bo
 
 void FPSCamera::toggle_camera_freeze() { camera_frozen = not camera_frozen; }
 void FPSCamera::freeze_camera() { camera_frozen = true; }
-void FPSCamera::unfreeze_camera() { camera_frozen = false; }
+void FPSCamera::unfreeze_camera() {
+
+    if (set_cursor_position) {
+        // NOTE: restoring to the old mouse pos before we froze to avoid large yaw pitch deltas
+        set_cursor_position.value()(mouse.last_mouse_position_x, mouse.last_mouse_position_y);
+    }
+
+    camera_frozen = false;
+}
 
 void FPSCamera::mouse_callback(double xpos, double ypos, double sensitivity_override) {
-    auto [yaw_delta, pitch_delta] = mouse.get_yaw_pitch_deltas(xpos, ypos, sensitivity_override);
+    LogSection _(global_logger, "mouse_callback");
 
-    if (camera_frozen)
+    if (camera_frozen) {
+        global_logger.info("camera frozen skipping callback");
         return;
+    }
+
+    // NOTE: by calling this here the mouse doesn't update unless the camera is unfrozen
+    auto [yaw_delta, pitch_delta] = mouse.get_yaw_pitch_deltas(xpos, ypos, sensitivity_override);
 
     transform.add_rotation_yaw(-yaw_delta);    // Yaw
     transform.add_rotation_pitch(pitch_delta); // Pitch

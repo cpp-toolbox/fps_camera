@@ -140,7 +140,19 @@ class FPSCamera : public ICamera {
     bool camera_frozen = false;
     void toggle_camera_freeze();
     void freeze_camera();
+    /**
+     * while the camera was frozen its possible the the mouse was moved around, and most likely it was because the
+     * general use case for freezing a camera is to interact with a menu where you would move your mouse around. Due to
+     * this if you unfreeze and then process with the next mouse position then you'll most likely obtain a huge delta
+     * which cause your camera to just look in a random direction, so long as set_cursor_position has been assigned,
+     * then this function will re-assign the last xpos, ypos to the cursor position so that this delta is not produced.
+     *
+     */
     void unfreeze_camera();
+
+    // TODO: you should reassign this member with a custom function that sets the cursor position, if you want the
+    // specific functionality mentioned in unfreeze_camera
+    std::optional<std::function<void(double, double)>> set_cursor_position = std::nullopt;
 
     bool zoomed_in;
     float original_fov, zoom_fov, near_plane, far_plane;
