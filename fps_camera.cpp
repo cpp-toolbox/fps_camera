@@ -58,42 +58,13 @@ void FPSCamera::update_position_based_on_keys_pressed(bool slow_move_pressed, bo
                                                       bool right_pressed, bool up_pressed, bool down_pressed,
                                                       float delta_time) {
 
-    float selected_speed;
+    movement::GodModeInput gmi{
+        slow_move_pressed, fast_move_pressed, forward_pressed, left_pressed,
+        backward_pressed,  right_pressed,     up_pressed,      down_pressed,
+    };
 
-    if (slow_move_pressed) {
-        selected_speed = slow_move_speed;
-    } else if (fast_move_pressed) {
-        selected_speed = fast_move_speed;
-    } else {
-        selected_speed = move_speed;
-    }
-
-    float delta_pos = selected_speed * delta_time;
-
-    // Compute forward and right vectors
-    glm::vec3 forward = transform.compute_forward_vector();
-    glm::vec3 right = glm::normalize(glm::cross(forward, up)); // Up vector is (0, 1, 0)
-
-    glm::vec3 movement(0.0f);
-
-    if (forward_pressed)
-        movement += forward;
-    if (backward_pressed)
-        movement -= forward;
-    if (left_pressed)
-        movement -= right;
-    if (right_pressed)
-        movement += right;
-    if (up_pressed)
-        movement += up;
-    if (down_pressed)
-        movement -= up;
-
-    if (glm::length(movement) > 0.0f) {
-        movement = glm::normalize(movement);
-    }
-
-    transform.add_translation(movement * delta_pos);
+    // TODO: maybe in the future we can swap this out
+    transform.add_translation(movement::god_mode_delta_pos(transform.compute_forward_vector(), gmi, delta_time));
 }
 
 void FPSCamera::toggle_camera_freeze() { camera_frozen = not camera_frozen; }
@@ -111,27 +82,52 @@ void FPSCamera::unfreeze_camera() {
 void FPSCamera::mouse_callback(double xpos, double ypos, double sensitivity_override) {
     LogSection _(global_logger, "mouse_callback");
 
+    global_logger.debug("Entering mouse_callback");
+    global_logger.debug("Input xpos: {}, ypos: {}, sensitivity_override: {}", xpos, ypos, sensitivity_override);
+
     if (camera_frozen) {
-        global_logger.info("camera frozen skipping callback");
+        global_logger.info("Camera is frozen; skipping mouse callback");
         return;
     }
 
     // NOTE: by calling this here the mouse doesn't update unless the camera is unfrozen
     auto [yaw_delta, pitch_delta] = mouse.get_yaw_pitch_deltas(xpos, ypos, sensitivity_override);
 
-    transform.add_rotation_yaw(-yaw_delta);    // Yaw
+    global_logger.debug("Received yaw_delta: {}, pitch_delta: {}", yaw_delta, pitch_delta);
+
+    transform.add_rotation_yaw(-yaw_delta); // Yaw
+    global_logger.debug("Applied yaw rotation: -{}", yaw_delta);
+
     transform.add_rotation_pitch(pitch_delta); // Pitch
-    float epsilon = .0001;
-    if (transform.get_rotation().x > .25 - epsilon)
-        transform.set_rotation_pitch(.25 - epsilon);
-    if (transform.get_rotation().x < -.25 + epsilon)
-        transform.set_rotation_pitch(-.25 + epsilon);
+    global_logger.debug("Applied pitch rotation: {}", pitch_delta);
+
+    float epsilon = 0.0001;
+    auto current_rotation = transform.get_rotation();
+    global_logger.debug("Current rotation after applying deltas: x={}, y={}, z={}", current_rotation.x,
+                        current_rotation.y, current_rotation.z);
+
+    double straight_up_pitch_turns = 0.25; // because forward is 0
+    double a_little_less_than_straight_up_pitch_turns = straight_up_pitch_turns - epsilon;
+    double a_little_more_than_straight_down_pitch_turns = -a_little_less_than_straight_up_pitch_turns;
+    if (current_rotation.x > a_little_less_than_straight_up_pitch_turns) {
+        transform.set_rotation_pitch(a_little_less_than_straight_up_pitch_turns);
+        global_logger.debug("Clamped pitch rotation to upper limit: {}", a_little_less_than_straight_up_pitch_turns);
+    }
+
+    if (current_rotation.x < a_little_more_than_straight_down_pitch_turns) {
+        transform.set_rotation_pitch(a_little_more_than_straight_down_pitch_turns);
+        global_logger.debug("Clamped pitch rotation to lower limit: {}", a_little_more_than_straight_down_pitch_turns);
+    }
+
+    auto final_rotation = transform.get_rotation();
+    global_logger.debug("Final rotation after clamping: x={}, y={}, z={}", final_rotation.x, final_rotation.y,
+                        final_rotation.z);
 }
 
 glm::mat4 FPSCamera::get_view_matrix() const {
     return glm::lookAt(transform.get_full_translation(),
                        transform.get_full_translation() + transform.compute_forward_vector(),
-                       glm::vec3(0.0f, 1.0f, 0.0f));
+                       glm::dvec3(0.0f, 1.0f, 0.0f));
 }
 
 glm::mat4 FPSCamera::get_third_person_view_matrix() const {
@@ -146,8 +142,8 @@ glm::mat4 FPSCamera::get_third_person_view_matrix() const {
     return glm::lookAt(camera_position, player_position + forward * 1.0f, glm::vec3(0.0f, 1.0f, 0.0f));
 }
 
-glm::mat4 FPSCamera::get_view_matrix_at(glm::vec3 position) const {
-    return glm::lookAt(position, position + transform.compute_forward_vector(), glm::vec3(0.0f, 1.0f, 0.0f));
+glm::mat4 FPSCamera::get_view_matrix_at(glm::dvec3 position) const {
+    return glm::lookAt(position, position + transform.compute_forward_vector(), glm::dvec3(0.0f, 1.0f, 0.0f));
 }
 
 // TODO: there is a bug here when screen_width and screen_height externally so then screen width and screen height are

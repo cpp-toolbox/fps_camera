@@ -132,8 +132,6 @@ class FPSCamera : public ICamera {
 
     // this is how many units per second you will move at
     float move_speed = 2;
-    float fast_move_speed = move_speed * 4;
-    float slow_move_speed = move_speed * .25;
     glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
     glm::mat4 projection;
 
@@ -284,7 +282,7 @@ class FPSCamera : public ICamera {
      */
     glm::mat4 get_view_matrix() const override;
     glm::mat4 get_third_person_view_matrix() const;
-    glm::mat4 get_view_matrix_at(glm::vec3 position) const;
+    glm::mat4 get_view_matrix_at(glm::dvec3 position) const;
     /**
      * @brief the projection matrix is the one that takes the world and applies the perspective view on the world
      */
