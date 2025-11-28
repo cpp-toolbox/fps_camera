@@ -259,13 +259,13 @@ class FPSCamera : public ICamera {
     }
 
     bool is_visible(const std::vector<glm::vec3> &xyz_positions, Transform &transform) override {
-        LogSection _(global_logger, "is_visible");
+        LogSection _(*global_logger, "is_visible");
         auto local_aabb = vertex_geometry::AxisAlignedBoundingBox(xyz_positions);
         return is_visible(local_aabb, transform);
     }
 
     bool is_visible(const vertex_geometry::AxisAlignedBoundingBox &aabb, Transform &transform) override {
-        LogSection _(global_logger, "is_visible");
+        LogSection _(*global_logger, "is_visible");
         auto frustum = get_visible_frustum_world_space();
         auto corners = get_aabb_corners_world(aabb, transform);
         return frustum.intersects_points(corners);
@@ -339,7 +339,7 @@ struct Camera2D : ICamera {
     }
 
     bool is_visible(const std::vector<glm::vec3> &xyz_positions, Transform &transform) override {
-        LogSection _(global_logger, "is_visible");
+        LogSection _(*global_logger, "is_visible");
 
         // compute object aabb in local space
         auto local_aabb = vertex_geometry::AxisAlignedBoundingBox(xyz_positions);
@@ -348,7 +348,7 @@ struct Camera2D : ICamera {
     }
 
     bool is_visible(const vertex_geometry::AxisAlignedBoundingBox &aabb, Transform &transform) override {
-        LogSection _(global_logger, "is_visible");
+        LogSection _(*global_logger, "is_visible");
 
         auto corners = aabb.get_corners();
 

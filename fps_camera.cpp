@@ -80,48 +80,48 @@ void FPSCamera::unfreeze_camera() {
 }
 
 void FPSCamera::mouse_callback(double xpos, double ypos, double sensitivity_override) {
-    LogSection _(global_logger, "mouse_callback");
+    LogSection _(*global_logger, "mouse_callback");
 
-    global_logger.debug("Entering mouse_callback");
-    global_logger.debug("Input xpos: {}, ypos: {}, sensitivity_override: {}", xpos, ypos, sensitivity_override);
+    global_logger->debug("Entering mouse_callback");
+    global_logger->debug("Input xpos: {}, ypos: {}, sensitivity_override: {}", xpos, ypos, sensitivity_override);
 
     if (camera_frozen) {
-        global_logger.info("Camera is frozen; skipping mouse callback");
+        global_logger->info("Camera is frozen; skipping mouse callback");
         return;
     }
 
     // NOTE: by calling this here the mouse doesn't update unless the camera is unfrozen
     auto [yaw_delta, pitch_delta] = mouse.get_yaw_pitch_deltas(xpos, ypos, sensitivity_override);
 
-    global_logger.debug("Received yaw_delta: {}, pitch_delta: {}", yaw_delta, pitch_delta);
+    global_logger->debug("Received yaw_delta: {}, pitch_delta: {}", yaw_delta, pitch_delta);
 
     transform.add_rotation_yaw(-yaw_delta); // Yaw
-    global_logger.debug("Applied yaw rotation: -{}", yaw_delta);
+    global_logger->debug("Applied yaw rotation: -{}", yaw_delta);
 
     transform.add_rotation_pitch(pitch_delta); // Pitch
-    global_logger.debug("Applied pitch rotation: {}", pitch_delta);
+    global_logger->debug("Applied pitch rotation: {}", pitch_delta);
 
     float epsilon = 0.0001;
     auto current_rotation = transform.get_rotation();
-    global_logger.debug("Current rotation after applying deltas: x={}, y={}, z={}", current_rotation.x,
-                        current_rotation.y, current_rotation.z);
+    global_logger->debug("Current rotation after applying deltas: x={}, y={}, z={}", current_rotation.x,
+                         current_rotation.y, current_rotation.z);
 
     double straight_up_pitch_turns = 0.25; // because forward is 0
     double a_little_less_than_straight_up_pitch_turns = straight_up_pitch_turns - epsilon;
     double a_little_more_than_straight_down_pitch_turns = -a_little_less_than_straight_up_pitch_turns;
     if (current_rotation.x > a_little_less_than_straight_up_pitch_turns) {
         transform.set_rotation_pitch(a_little_less_than_straight_up_pitch_turns);
-        global_logger.debug("Clamped pitch rotation to upper limit: {}", a_little_less_than_straight_up_pitch_turns);
+        global_logger->debug("Clamped pitch rotation to upper limit: {}", a_little_less_than_straight_up_pitch_turns);
     }
 
     if (current_rotation.x < a_little_more_than_straight_down_pitch_turns) {
         transform.set_rotation_pitch(a_little_more_than_straight_down_pitch_turns);
-        global_logger.debug("Clamped pitch rotation to lower limit: {}", a_little_more_than_straight_down_pitch_turns);
+        global_logger->debug("Clamped pitch rotation to lower limit: {}", a_little_more_than_straight_down_pitch_turns);
     }
 
     auto final_rotation = transform.get_rotation();
-    global_logger.debug("Final rotation after clamping: x={}, y={}, z={}", final_rotation.x, final_rotation.y,
-                        final_rotation.z);
+    global_logger->debug("Final rotation after clamping: x={}, y={}, z={}", final_rotation.x, final_rotation.y,
+                         final_rotation.z);
 }
 
 glm::mat4 FPSCamera::get_view_matrix() const {
